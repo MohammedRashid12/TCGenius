@@ -13,6 +13,7 @@ headers = {
 
 response = requests.get(api_url, headers=headers)
 if response.status_code == 200:
+    #searching for data with json type
     card_data = response.json()
     for card in card_data['data']:
         print(f"Card Name: {card['name']}")
