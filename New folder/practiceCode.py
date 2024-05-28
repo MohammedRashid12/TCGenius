@@ -1,7 +1,7 @@
 import requests
 
 # Replace 'YOUR_API_KEY' with your actual API key if required.
-api_key = '51edb33e-9524-40e9-8e07-5a8ae0a6f943'
+
 card_name = 'Squirtle'
 
 # Pokémon TCG API endpoint
