@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Watchlist</title>
+    <link rel="stylesheet" href="styles.css"> <!-- link to css -->
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo" id="logo">TCGenius</div>
+            <ul class="nav-links">
+                <li><a href="#" id="home-button">Home</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main id="main-content">
+        <div class="container"> <!-- container to hold search and watchlist sections -->
+            <section id="search">
+                <h2>Search Items</h2>
+                <input type="text" id="search-input" placeholder="Search for items..."> <!-- search field -->
+                <button id="search-button">Search</button> <!-- search button -->
+                <div id="search-results"></div> <!-- Container for search results -->
+            </section>
+            <section id="watchlist">
+                <div class="watchlist-header">
+                    <h2>Your Watchlist</h2>
+                    <button id="add-to-watchlist">+</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card Name</th>
+                            <th>Set</th>
+                            <th>Market Price (USD)</th>
+                            <th>Foil Market Price (USD)</th>
+                            <th>52-Week Range</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="watchlist-items">
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <!-- Add to Watchlist Modal -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-add-modal">&times;</span>
+            <h2>Add to Watchlist</h2>
+            <form id="add-form">
+                <label for="card-set">Set Name:</label>
+                <select id="card-set" required>
+                    <option value="" disabled selected>Select a set</option>
+                    <option value="Spark of Rebellion">Spark of Rebellion</option>
+                    <option value="Shadows of the Galaxy">Shadows of the Galaxy</option>
+                    <option value="Event Exclusive Promos">Event Exclusive Promos</option>
+                    <option value="Judge Promos">Judge Promos</option>
+                    <option value="Store Showdown Promos">Store Showdown Promos</option>
+                    <option value="Weekly Play Promos">Weekly Play Promos</option>
+                    <option value="Prerelease Promos">Prerelease Promos</option>
+                    <option value="GenCon 2023 Promos">GenCon 2023 Promos</option>
+                    <!-- Add more options as needed -->
+                </select>
+                <label for="card-name">Card Name:</label>
+                <input type="text" id="card-name" list="card-names" required>
+                <datalist id="card-names"></datalist>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h1>Welcome to TCGenius!</h1> <!-- Added title -->
+            <h2>Login</h2>
+            <form id="login-form">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" required>
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+                <button type="submit">Login</button>
+            </form>
+            <div class="switch-to-signup">
+                <p>Don't have an account? <button id="switch-to-signup">Sign Up</button></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <h1>Welcome to TCGenius!</h1> <!-- Added title -->
+            <h2>Sign Up</h2>
+            <form id="signup-form">
+                <label for="signup-name">Name:</label>
+                <input type="text" id="signup-name" required>
+                <label for="signup-email">Email:</label>
+                <input type="email" id="signup-email" required>
+                <label for="signup-password">Password:</label>
+                <input type="password" id="signup-password" required>
+                <label for="signup-confirm-password">Confirm Password:</label>
+                <input type="password" id="signup-confirm-password" required>
+                <div id="signup-error" class="error-message"></div> <!-- Error message -->
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Card Inspection Modal -->
+    <div id="inspect-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-inspect-modal">&times;</span>
+            <h2>Card Details</h2>
+            <div id="card-details">
+                <!-- Card details will be dynamically populated here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 TCGenius. All rights reserved.</p> <!-- Footer -->
+    </footer>
+    <script src="app.js"></script> <!-- Link to js file -->
+</body>
+</html>
