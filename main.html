@@ -3,50 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Watchlist</title>
-    <link rel="stylesheet" href="styles.css"> <!-- link to css -->
+    <title>TCGenius</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="app.js"></script>
 </head>
 <body>
     <header>
         <nav class="navbar">
-            <div class="logo" id="logo">TCGenius</div>
-            <ul class="nav-links">
-                <li><a href="#" id="home-button">Home</a></li>
-                <li><a href="#">Watchlist</a></li>
-            </ul>
+            <div class="logo logo-left" id="logo"><img src="Logo.webp" alt="Logo"></div>
+            <div class="dropdown">
+                <button class="dropbtn">&#9776;</button>
+                <div class="dropdown-content">
+                    <a href="main.html" id="dashboard">Dashboard</a>
+                    <a href="profile.html">Profile</a>
+                    <a href="login.html">Sign Out</a>
+                </div>
+            </div>
         </nav>
     </header>
     <main id="main-content">
-        <div class="container"> <!-- container to hold search and watchlist sections -->
+        <div class="container">
             <section id="search">
                 <h2>Search Items</h2>
-                <input type="text" id="search-input" placeholder="Search for items..."> <!-- search field -->
-                <button id="search-button">Search</button> <!-- search button -->
-                <div id="search-results"></div> <!-- Container for search results -->
+                <input type="text" id="search-input" placeholder="Search for items...">
+                <button id="search-button">Search</button>
+                <div id="search-results"></div>
             </section>
             <section id="watchlist">
                 <div class="watchlist-header">
                     <h2>Your Watchlist</h2>
                     <button id="add-to-watchlist">+</button>
+                    <button id="create-new-watchlist">Create New Watchlist</button>
                 </div>
                 <table>
                     <thead>
                         <tr>
                             <th>Card Name</th>
                             <th>Set</th>
-                            <th>Market Price</th>
+                            <th>Market Price (USD)</th>
+                            <th>Foil Market Price (USD)</th>
                             <th>52-Week Range</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="watchlist-items">
-                    </tbody>
+                    <tbody id="watchlist-items"></tbody>
                 </table>
             </section>
         </div>
     </main>
-
-    <!-- Add to Watchlist Modal -->
+    <div id="create-watchlist-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-create-watchlist-modal">&times;</span>
+            <h2>Create New Watchlist</h2>
+            <form id="create-watchlist-form">
+                <label for="game-select">Select Game:</label>
+                <select id="game-select" required>
+                    <option value="" disabled selected>Select a game</option>
+                    <option value="Star Wars Unlimited">Star Wars Unlimited</option>
+                    <option value="Lorcana">Lorcana</option>
+                </select>
+                <button type="submit">Create Watchlist</button>
+            </form>
+        </div>
+    </div>
     <div id="add-modal" class="modal">
         <div class="modal-content">
             <span class="close" id="close-add-modal">&times;</span>
@@ -63,7 +82,6 @@
                     <option value="Weekly Play Promos">Weekly Play Promos</option>
                     <option value="Prerelease Promos">Prerelease Promos</option>
                     <option value="GenCon 2023 Promos">GenCon 2023 Promos</option>
-                    <!-- Add more options as needed -->
                 </select>
                 <label for="card-name">Card Name:</label>
                 <input type="text" id="card-name" list="card-names" required>
@@ -72,59 +90,17 @@
             </form>
         </div>
     </div>
-
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <h1>Welcome to TCGenius!</h1> <!-- Added title -->
-            <h2>Login</h2>
-            <form id="login-form">
-                <label for="login-email">Email:</label>
-                <input type="email" id="login-email" required>
-                <label for="login-password">Password:</label>
-                <input type="password" id="login-password" required>
-                <button type="submit">Login</button>
-            </form>
-            <div class="switch-to-signup">
-                <p>Don't have an account? <button id="switch-to-signup">Sign Up</button></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup Modal -->
-    <div id="signup-modal" class="modal">
-        <div class="modal-content">
-            <h1>Welcome to TCGenius!</h1> <!-- Added title -->
-            <h2>Sign Up</h2>
-            <form id="signup-form">
-                <label for="signup-name">Name:</label>
-                <input type="text" id="signup-name" required>
-                <label for="signup-email">Email:</label>
-                <input type="email" id="signup-email" required>
-                <label for="signup-password">Password:</label>
-                <input type="password" id="signup-password" required>
-                <label for="signup-confirm-password">Confirm Password:</label>
-                <input type="password" id="signup-confirm-password" required>
-                <div id="signup-error" class="error-message"></div> <!-- Error message -->
-                <button type="submit">Sign Up</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Card Inspection Modal -->
     <div id="inspect-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="close-inspect-modal">&times;</span>
-            <h2>Card Details</h2>
-            <div id="card-details">
-                <!-- Card details will be dynamically populated here -->
-            </div>
+    <div class="modal-content">
+        <span class="close" id="close-inspect-modal">&times;</span>
+        <h2>Card Details</h2>
+        <div id="card-details">
+            <!-- Card details will be populated here -->
         </div>
     </div>
-
+</div>
     <footer>
-        <p>&copy; 2024 TCGenius. All rights reserved.</p> <!-- Footer -->
+        <p>&copy; 2024 TCGenius. All rights reserved.</p>
     </footer>
-    <script src="app.js"></script> <!-- Link to js file -->
 </body>
 </html>

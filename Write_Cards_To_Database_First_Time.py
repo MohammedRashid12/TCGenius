@@ -15,7 +15,7 @@ r = requests.get(f"https://tcgcsv.com/categories")
 all_categories = r.json()['results']
 
 for category in all_categories:
-    if category['categoryId'] == 68:
+    if category['categoryId'] == 68 or category['categoryId'] == 79:
         #doc_ref =
         cardCategory = category['categoryId']
 
@@ -32,6 +32,10 @@ for category in all_categories:
 
             doc_ref = db.document(f"TradingCardGames/{category['name']}/Sets/{group['name']}").collection('cards')
             card = {}
+
+            #Set field to de-virtualize the 'Card Set' document.
+            setData = {"name": group['name']}
+            db.collection(f"TradingCardGames/{category['name']}/Sets").document(group['name']).set(setData)
 
             for product in products:
                 if product['extendedData']:
