@@ -24,53 +24,66 @@ const auth = getAuth(app);
 // Firestore Database Instance
 const db = getFirestore(app);
 
-export async function getTCGSets(cardGame) {
+//get all sets in a TCG
+export async function getTCGSets(cardGame, setList) {
     const setNames = [];
-    const q = query(collection(db, "TradingCardGames", "Star Wars Unlimited", "Sets"));
-    const listOfSets = await getDocs(q);
+    const setQuery = query(collection(db, "TradingCardGames", cardGame, "Sets"));
+    //console.log(setQuery);
+    const listOfSets = await getDocs(setQuery);
+    //const listOfSets = await getDocs(collection(db, "TradingCardGames", cardGame, "Sets", "Spark of Rebellion", "cards"));
+    //console.log(listOfSets);
     listOfSets.forEach((doc) => {
+        const set = doc.data();
         //const set = doc.data();
-        console.log(doc.id);
+        //console.log(doc.id);
         setNames.push(doc.id);
+        //const option = document.createElement('option');
+        //option.value = doc.id;
+        //option.textContent = doc.id;
+        //setList.appendChild(option);
 
     });
+    console.log(setNames);
     return setNames;
 }
 
-export async function getCardsInSet(setName, dataList){
+//get all cards in a set
+export async function getCardsInSet(setName, dataList, cardGame){
+    var cards = [];
     console.log(setName);
-    const q = query(collection(db, "TradingCardGames", "Star Wars Unlimited", "Sets", setName, "cards"));
+    const q = query(collection(db, "TradingCardGames", cardGame, "Sets", setName, "cards"));
     const listOfCards = await getDocs(q);
     listOfCards.forEach((doc) => {
         const card = doc.data();
-        console.log(doc.id, " => ", doc.data());
-        const option = document.createElement('option');
-        option.value = card.name;
-        dataList.appendChild(option);
+        cards.push(card);
+        //console.log(doc.id, " => ", doc.data());
+        /*const option = document.createElement('option');
+        option.value = card;
+        option.textContent = card.name;
+        dataList.appendChild(option);*/
     });
+    //console.log(cards);
     //if (listOfCards){
-    console.log("returning listOfCards");
-    return listOfCards;
-    //}
+    //console.log("returning listOfCards");
     //return listOfCards;
+    //}
+    return cards;
     //return await getDocs(collection(db, "TradingCardGames", "Star Wars Unlimited", "Sets", setName, "cards"))
 }
 
+//Unneeded?
 export async function saveUserData(userId, email) {
-        try {
-            email = email.toLowerCase();
-            const usersRef = collection(db, "Users");
-            await setDoc(doc(usersRef, email), {
-                email: email,
-                userId: userId
-            });
-            console.log('Data Saved correctly (probably)');
-        } catch (error) {
-            console.error('Error saving user data: ', error);
-        }
-
+    email = email.toLowerCase();
+    const usersRef = collection(db, "Users");
+    await setDoc(doc(usersRef, email), {
+        email: email,
+        userId: userId
+    });
+    console.log('Data Saved correctly (probably)');
+    return 0;
 }
 
+//Save a selected card to the watchlist in the database
 export async function saveCardToUserWatchlist(setName, cardId) {
     const docRef = doc(db, "TradingCardGames", "Star Wars Unlimited", "Sets", setName, "cards", cardId.toString());
     console.log(setName)
@@ -90,9 +103,4 @@ export async function saveCardToUserWatchlist(setName, cardId) {
         docSnap.data()
     );
 }
-
-
-
-
-
 
