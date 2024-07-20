@@ -82,19 +82,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // email verification
                 const user = userCredential.user;
 
-
                 sendEmailVerification(user)
                     .then(() => {
-                        saveUserData(user.uid, email)
+                        saveUserData(user.uid, email).then((result) => {
+                            window.location.href = 'login.html';
+                        });
                         //alert('Verification email sent. Please check your inbox.');
                         //window.location.href = 'login.html';
                     })
                     .catch((error) => {
                         alert('Error sending verification email: ' + error.message);
                     });
-
-
-
 
             })
             .catch((error) => {
