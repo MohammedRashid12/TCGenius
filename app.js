@@ -37,12 +37,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeCreateWatchlistModal = document.getElementById('close-create-watchlist-modal');
     const createWatchlistForm = document.getElementById('create-watchlist-form');
     const gameSelect = document.getElementById('game-select');
+    const cardImage = document.getElementById('card-image');
 
     const lorcanaCardData = {
         'Set 1': [
-            { id: 1001, name: "Card A" },
-            { id: 1002, name: "Card B" },
-            { id: 1003, name: "Card C" },
+            { id: 1001, name: "Card A",},
+            { id: 1002, name: "Card B",},
+            { id: 1003, name: "Card C",},
             // Add more Lorcana cards here
         ],
         // Add more Lorcana sets here
@@ -90,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
         defaultOption.textContent = 'Select a set';
         cardSetSelect.appendChild(defaultOption);
 
-        //const sets = currentGame === 'Star Wars Unlimited' ? cardData : lorcanaCardData;
         getTCGSets(currentGame, cardSetSelect)
         .then((result) => {
             console.log(result);
@@ -101,25 +101,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 cardSetSelect.appendChild(option);
             }
         });
-
     }
 
     addForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const setName = cardSetSelect.value;
         const cardName = cardNameInput.value;
-        const cardId = (currentGame === 'Star Wars Unlimited' ? cardData : lorcanaCardData)[setName].find(card => card.name === cardName).id;
-        //saveCardToUserWatchlist(setName, cardId);
+
+        const cardDataArray = currentGame === 'Star Wars Unlimited' ? cardData : lorcanaCardData;
+        const selectedCard = cardDataArray[setName].find(card => card.name === cardName);
+        
+        const cardId = selectedCard.id;
+        const imageUrl = selectedCard.imageUrl;
+
+        saveCardToUserWatchlist(setName, cardId);
     });
 
-    // Call updateCardSetOptions on load to populate options for the default game
+    async function fetchImageUrl(setName, cardId) {
+        // Assuming getImageUrl is a function in firebase.js that fetches the image URL for a card
+        return await getImageUrl(setName, cardId);
+    }
+
+    function displayCardDetails(card) {
+        cardImage.src = card.imageUrl;
+        inspectModal.style.display = "block";
+    }
+
+    watchlistTable.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('inspect')) {
+            const cardId = e.target.dataset.cardId;
+            const setName = e.target.dataset.setName;
+            const imageUrl = await fetchImageUrl(setName, cardId);
+            displayCardDetails({ imageUrl });
+        }
+    });
+
+    closeInspectModal.onclick = function() {
+        inspectModal.style.display = "none";
+    };
+
     updateCardSetOptions();
 
-    // Populate the datalist with card names
     cardSetSelect.addEventListener('change', function() {
         cardNamesDataList.innerHTML = ''; // Clear previous options
         const selectedSet = cardSetSelect.value;
-        if (selectedSet) {// && cardData[selectedSet]) {
+        if (selectedSet) {
             getCardsInSet(selectedSet, cardNamesDataList, currentGame)
             .then((result) => {
                 cardData[selectedSet] = result;
@@ -128,26 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.value = card.name;
                     cardNamesDataList.appendChild(option);
                 });
-                //console.log(cardData);
-                //console.log(dbCardData);
             });
-            //const getCards = async() => {
-                /*var listOfCards = *//*await*//* getCardsInSet(selectedSet, cardNamesDatalist).then(() => {
-                    console.log("returned listOfCards");
-                    listOfCards.data.forEach((card) => {
-                        card.data();
-                        const option = document.createElement('option');
-                        option.value = card.name;
-                        cardNamesDataList.appendChild(option);
-                    });
-                });*/
-            //}
-
-            /*cardData[selectedSet].forEach(card => {
-                const option = document.createElement('option');
-                option.value = card.name;
-                cardNamesDatalist.appendChild(option);
-            });*/
         }
     });
 
@@ -164,10 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     closeAddModal.addEventListener('click', function() {
         addModal.style.display = 'none';
-    });
-
-    closeInspectModal.addEventListener('click', function() {
-        inspectModal.style.display = 'none';
     });
 
     addForm.addEventListener('submit', function(e) {
@@ -207,13 +210,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.inspectCard = function(cardName, cardSet) {
-        // Implement the inspect card functionality here
         console.log('Inspecting:', cardName, cardSet);
-        inspectModal.style.display = 'block';
+        const selectedCard = cardData[cardSet].find(card => card.name === cardName);
+        if (selectedCard) {
+            cardImage.src = selectedCard.imageUrl; // Set the image URL
+            inspectModal.style.display = 'block';
+        }
     };
 
     window.removeFromWatchlist = function(button) {
-        // Implement the remove from watchlist functionality here
         const row = button.closest('tr');
         row.remove();
     };
