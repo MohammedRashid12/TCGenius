@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCGenius</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="app.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo logo-left" id="logo"><img src="Logo.webp" alt="Logo"></div>
+            <div class="dropdown">
+                <button class="dropbtn">&#9776;</button>
+                <div class="dropdown-content">
+                    <a href="main.html" id="dashboard">Dashboard</a>
+                    <a href="profile.html">Profile</a>
+                    <a href="login.html">Sign Out</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main id="main-content">
+        <div class="container">
+            <section id="search">
+                <h2>Search Items</h2>
+                <input type="text" id="search-input" placeholder="Search for items...">
+                <button id="search-button">Search</button>
+                <div id="search-results"></div>
+            </section>
+            <section id="watchlist">
+                <div class="watchlist-header">
+                    <h2>Your Watchlist</h2>
+                    <button id="add-to-watchlist">+</button>
+                    <button id="create-new-watchlist">Create New Watchlist</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card Name</th>
+                            <th>Set</th>
+                            <th>Market Price (USD)</th>
+                            <th>Foil Market Price (USD)</th>
+                            <th>52-Week Range</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="watchlist-items"></tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+    <div id="create-watchlist-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-create-watchlist-modal">&times;</span>
+            <h2>Create New Watchlist</h2>
+            <form id="create-watchlist-form">
+                <label for="game-select">Select Game:</label>
+                <select id="game-select" required>
+                    <option value="" disabled selected>Select a game</option>
+                    <option value="Star Wars Unlimited">Star Wars Unlimited</option>
+                    <option value="Lorcana">Lorcana</option>
+                </select>
+                <button type="submit">Create Watchlist</button>
+            </form>
+        </div>
+    </div>
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-add-modal">&times;</span>
+            <h2>Add to Watchlist</h2>
+            <form id="add-form">
+                <label for="card-set">Set Name:</label>
+                <select id="card-set" required>
+                    <option value="" disabled selected>Select a set</option>
+                    <option value="Spark of Rebellion">Spark of Rebellion</option>
+                    <option value="Shadows of the Galaxy">Shadows of the Galaxy</option>
+                    <option value="Event Exclusive Promos">Event Exclusive Promos</option>
+                    <option value="Judge Promos">Judge Promos</option>
+                    <option value="Store Showdown Promos">Store Showdown Promos</option>
+                    <option value="Weekly Play Promos">Weekly Play Promos</option>
+                    <option value="Prerelease Promos">Prerelease Promos</option>
+                    <option value="GenCon 2023 Promos">GenCon 2023 Promos</option>
+                </select>
+                <label for="card-name">Card Name:</label>
+                <input type="text" id="card-name" list="card-names" required>
+                <datalist id="card-names"></datalist>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+    <div id="inspect-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="close-inspect-modal">&times;</span>
+        <h2>Card Details</h2>
+        <div id="card-details">
+            <!-- Card details will be populated here -->
+        </div>
+    </div>
+</div>
+    <footer>
+        <p>&copy; 2024 TCGenius. All rights reserved.</p>
+    </footer>
+</body>
+</html>
