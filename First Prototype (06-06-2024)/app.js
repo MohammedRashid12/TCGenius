@@ -1,35 +1,68 @@
+// Imports Firebase modules for app initialization / authentication 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+import { getCardsInSet, saveCardToUserWatchlist, getTCGSets } from "./firebase.js";
+
+// Firebase configuration 
+const firebaseConfig = {
+    apiKey: "AIzaSyDzjvMuATSARkGN1GTdJYCJ5ENpVZ9S0wY",
+    authDomain: "tcgenius-beeb9.firebaseapp.com",
+    databaseURL: "https://tcgenius-beeb9-default-rtdb.firebaseio.com",
+    projectId: "tcgenius-beeb9",
+    storageBucket: "tcgenius-beeb9.appspot.com",
+    messagingSenderId: "498344412025",
+    appId: "1:498344412025:web:61e52b46a0f2c0a2f665a8",
+    measurementId: "G-F1F30GC0F8"
+};
+
+const app = initializeApp(firebaseConfig); // Firebase initialization
+const auth = getAuth(app); // Get Firebase Auth instance
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchButton = document.getElementById('search-button'); // Get the search button element
     const searchInput = document.getElementById('search-input'); // Get the search input field element
-
     const watchlistTable = document.querySelector('#watchlist-items'); // Get the tbody element of the watchlist table
-
     const homeButton = document.getElementById('home-button'); // Get the home button element
-
     const addButton = document.getElementById('add-to-watchlist'); // Get the add to watchlist button element
     const addModal = document.getElementById('add-modal'); // Get the add modal element
     const closeAddModal = document.getElementById('close-add-modal'); // Get the close button for add modal
-
-    const loginModal = document.getElementById('login-modal'); // Get the login modal element
-    const signupModal = document.getElementById('signup-modal'); // Get the signup modal element
-
     const inspectModal = document.getElementById('inspect-modal'); // Get the inspect modal element
     const closeInspectModal = document.getElementById('close-inspect-modal'); // Get the close button for inspect modal
-
     const addForm = document.getElementById('add-form'); // Get the add form element
-
-    const loginForm = document.getElementById('login-form'); // Get the login form element
-    const signupForm = document.getElementById('signup-form'); // Get the signup form element
-
-    const switchToSignupButton = document.getElementById('switch-to-signup'); // Get the switch to signup button element
-
-    const logo = document.getElementById('logo'); // Get the TCGenius logo element
-
     const cardSetSelect = document.getElementById('card-set'); // Get the set name select element
     const cardNameInput = document.getElementById('card-name'); // Get the card name input element
     const cardNamesDatalist = document.getElementById('card-names'); // Get the card names datalist element
+    const createNewWatchlistButton = document.getElementById('create-new-watchlist');
+    const createWatchlistModal = document.getElementById('create-watchlist-modal');
+    const closeCreateWatchlistModal = document.getElementById('close-create-watchlist-modal');
+    const createWatchlistForm = document.getElementById('create-watchlist-form');
+    const gameSelect = document.getElementById('game-select');
 
-    // Sample data for sets and card names with IDs
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileLink = document.querySelector('.dropdown-content a[href="profile.html"]');
+    
+        profileLink.addEventListener('click', async function(e) {
+            e.preventDefault();
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const userData = await getUserData(user.email);
+                    if (userData) {
+                        sessionStorage.setItem('userName', userData.name);
+                        sessionStorage.setItem('userEmail', userData.email);
+                        sessionStorage.setItem('memberSince', userData.memberSince);
+                        sessionStorage.setItem('favoriteTCG', userData.favoriteTCG);
+                    }
+                    window.location.href = 'profile.html';
+                } else {
+                    window.location.href = 'login.html'; // Redirect to login if not authenticated
+                }
+            });
+        });
+    });
+
+
+
+  // Sample data for sets and card names with IDs
     const cardData = {
         'Shadows of the Galaxy': [ 
             { id: 549492, name: "Hunter - Outcast Sergeant" },
@@ -779,279 +812,109 @@ document.addEventListener('DOMContentLoaded', function() {
             ]
             
     };
-
-    // Display login modal by default when the page loads
-    loginModal.style.display = 'block';
-
-    // Event listener for the home button click 
-    homeButton.addEventListener('click', function() {
-        document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
+    const lorcanaCardData = {
+        'Set 1': [
+            { id: 1001, name: "Card A" },
+            { id: 1002, name: "Card B" },
+            { id: 1003, name: "Card C" },
+            // Add more Lorcana cards here
+        ],
+        // Add more Lorcana sets here
+    };
+    
+    let currentGame = 'Star Wars Unlimited';
+    
+    createNewWatchlistButton.addEventListener('click', function() {
+        createWatchlistModal.style.display = 'block';
     });
 
-    // Event listener for the logo click 
-    logo.addEventListener('click', function() {
-        document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
+    closeCreateWatchlistModal.addEventListener('click', function() {
+        createWatchlistModal.style.display = 'none';
     });
 
-
-
-    // Event listener for closing the add modal
-    closeAddModal.addEventListener('click', function() {
-        addModal.style.display = 'none';
+    window.addEventListener('click', function(event) {
+        if (event.target == createWatchlistModal) {
+            createWatchlistModal.style.display = 'none';
+        }
     });
 
-    // Event listener for closing the inspect modal
-    closeInspectModal.addEventListener('click', function() {
-        inspectModal.style.display = 'none';
+    createWatchlistForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const gameChoice = gameSelect.value;
+        if (gameChoice === 'Star Wars Unlimited' || gameChoice === 'Lorcana') {
+            currentGame = gameChoice;
+            alert(`New watchlist created for ${currentGame}`);
+            updateCardSetOptions();
+            createWatchlistModal.style.display = 'none';
+        } else {
+            alert("Invalid choice. Please choose 'Star Wars Unlimited' or 'Lorcana'.");
+        }
     });
 
-    // Event listener for the set name selection change event
-    cardSetSelect.addEventListener('change', function() {
-        const selectedSet = cardSetSelect.value; // Get the selected set name
-        const cardNames = (cardData[selectedSet] || []).map(card => card.name); // Get the card names for the selected set
-        updateCardNameDatalist(cardNames); // Update the datalist with the card names
-    });
+    function updateCardSetOptions() {
+        while (cardSetSelect.firstChild) {
+            cardSetSelect.removeChild(cardSetSelect.firstChild);
+        }
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = 'Select a set';
+        cardSetSelect.appendChild(defaultOption);
 
-    // Function to update the card name datalist
-    function updateCardNameDatalist(cardNames) {
-        cardNamesDatalist.innerHTML = ''; // Clear the current options
-        cardNames.forEach(cardName => {
+        //const sets = currentGame === 'Star Wars Unlimited' ? cardData : lorcanaCardData;
+        const sets = getTCGSets(currentGame);
+        for (const setName in sets) {
             const option = document.createElement('option');
-            option.value = cardName;
-            cardNamesDatalist.appendChild(option); // Add the card name option to the datalist
-        });
+            option.value = setName;
+            option.textContent = setName;
+            cardSetSelect.appendChild(option);
+        }
     }
 
-    // Function to check if an item already exists in the watchlist
-    function itemExistsInWatchlist(cardId) {
-        const rows = watchlistTable.querySelectorAll('tr');
-        for (const row of rows) {
-            const cells = row.querySelectorAll('td');
-            if (cells[0].dataset.id === String(cardId)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Event listener for the search button click event
-    searchButton.addEventListener('click', function() {
-        const searchTerm = searchInput.value.toLowerCase(); // Get the search term and convert it to lowercase
-        const filteredItems = sampleItems.filter(item => 
-            item.name.toLowerCase().includes(searchTerm) ||
-            item.category.toLowerCase().includes(searchTerm)
-        ); // Filter items based on the search term
-        displaySearchResults(filteredItems); // Display the filtered search results
+    addForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const setName = cardSetSelect.value;
+        const cardName = cardNameInput.value;
+        const cardId = (currentGame === 'Star Wars Unlimited' ? cardData : lorcanaCardData)[setName].find(card => card.name === cardName).id;
+        //saveCardToUserWatchlist(setName, cardId);
     });
 
-    // Event listener for the add form submit event
-    addForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form from submitting
-        const cardName = cardNameInput.value; // Get card name
-        const cardSet = cardSetSelect.value; // Get card set
+    // Call updateCardSetOptions on load to populate options for the default game
+    updateCardSetOptions();
 
-        // Find the card in the selected set
-        const card = (cardData[cardSet] || []).find(c => c.name === cardName);
-        if (card) {
-            if (itemExistsInWatchlist(card.id)) {
-                alert('This card is already in your watchlist.');
-                return;
-            }
-            const newItem = { id: card.id, name: card.name, category: cardSet, price: card.Normal, quantity: 'N/A' };
-            addToWatchlist(newItem); // Add to watchlist using the card ID
-            saveWatchlist(); // Save the updated watchlist
-            addModal.style.display = 'none'; // Close the modal
-            addForm.reset(); // Reset the form
-        } else {
-            alert('Invalid card name selected. Please select a valid card name from the list.');
-        }
-    });
-
-    // Event listener for the login form submit event
-    loginForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form from submitting
-        loginModal.style.display = 'none'; // Close the login modal
-        // Redirect to the home page (scroll to main content)
-        document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
-    });
-
-    // Event listener for the signup form submit event
-    signupForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form from submitting
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
-        const errorMessage = document.getElementById('signup-error');
-
-        if (password !== confirmPassword) {
-            errorMessage.textContent = "Passwords do not match!";
-            errorMessage.style.display = 'block';
-        } else {
-            errorMessage.style.display = 'none';
-            signupModal.style.display = 'none'; // Close the signup modal
-            
-            // Redirect to the home page (scroll to main content)
-            document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-
-    // Event listener for the switch to signup button click event
-    switchToSignupButton.addEventListener('click', function() {
-        loginModal.style.display = 'none'; // Close the login modal
-        signupModal.style.display = 'block'; // Open the signup modal
-    });
-
-    // Function to display search results
-    function displaySearchResults(items) {
-        const searchSection = document.getElementById('search'); // Get the search section element
-        let resultContainer = document.getElementById('search-results'); // Get the current search results container, if it exists
-
-        // Clear previous results if they exist
-        if (resultContainer) {
-            resultContainer.remove();
-        }
-
-        // Create a new container for search results
-        resultContainer = document.createElement('div');
-        resultContainer.id = 'search-results';
-        searchSection.appendChild(resultContainer); // Append the new container to the search section
-
-        // Iterate over each item and create a card for it
-        items.forEach(item => {
-            const itemDiv = document.createElement('div');
-            itemDiv.classList.add('item-card'); // Add a class for styling
-            itemDiv.innerHTML = `
-                <h3>${item.name}</h3>
-                <p>Category: ${item.category}</p>
-                <p>Price: ${item.price}</p>
-                <p>Quantity: ${item.quantity}</p>
-                <button class="add">Add to Watchlist</button>
-            `; // Populate the card with item details
-            resultContainer.appendChild(itemDiv); // Add the card to the result container
-
-            // Add listener for the "Add to Watchlist" button
-            itemDiv.querySelector('.add').addEventListener('click', function() {
-                addToWatchlist(item);
-                saveWatchlist(); // Save the updated watchlist
-            });
-        });
-    }
-
-    
-
-    // Function to add a watchlist item
-    function addWatchlistItem(card) {
-        const row = document.createElement('tr');
-
-        const cardNameCell = document.createElement('td');
-        cardNameCell.textContent = card.name;
-        row.appendChild(cardNameCell);
-
-        const cardSetCell = document.createElement('td');
-        cardSetCell.textContent = card.set;
-        row.appendChild(cardSetCell);
-
-        const marketPriceCell = document.createElement('td');
-        marketPriceCell.textContent = card.marketPrice !== undefined ? card.marketPrice : 'N/A';
-        row.appendChild(marketPriceCell);
-
-        const foilPriceCell = document.createElement('td');
-        foilPriceCell.textContent = card.foilPrice !== undefined ? card.foilPrice : 'N/A';
-        row.appendChild(foilPriceCell);
-
-        const weekRangeCell = document.createElement('td');
-        weekRangeCell.textContent = card.weekRange !== undefined ? card.weekRange : 'N/A';
-        row.appendChild(weekRangeCell);
-
-        const actionsCell = document.createElement('td');
-        const inspectButton = document.createElement('button');
-        inspectButton.textContent = 'Inspect';
-        inspectButton.classList.add('inspect');
-        actionsCell.appendChild(inspectButton);
-
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove';
-        removeButton.classList.add('remove');
-        actionsCell.appendChild(removeButton);
-
-        row.appendChild(actionsCell);
-
-        watchlistTable.appendChild(row);
-
-         // Add event listener for the "Inspect" button
-         row.querySelector('.inspect').addEventListener('click', function() {
-            showCardDetails(item); // Show card details when inspect button is clicked
-        });
-
-        // Add event listener for the "Remove" button
-        row.querySelector('.remove').addEventListener('click', function() {
-            row.remove(); // Remove the row from the watchlist table
-            saveWatchlist(); // Save the updated watchlist
-        });
-    }
-
-    function renderWatchlist() {
-        watchlistTable.innerHTML = ''; 
-        for (const set in cardData) {
-            if (cardData.hasOwnProperty(set)) {
-                cardData[set].forEach(card => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${card.name}</td>
-                        <td>${set}</td>
-                        <td>${card.Normal ? card.Normal.toFixed(2) : 'N/A'}</td>
-                        <td>${card.Foil ? card.Foil.toFixed(2) : 'N/A'}</td>
-                        <td>52-Week Range</td>
-                        <td>
-                            <button class="inspect" data-card-id="${card.id}" data-card-set="${set}">Inspect</button>
-                            <button class="remove">Remove</button>
-                        </td>
-                    `;
-                    watchlistTable.appendChild(tr);
-                });
-            }
-        }
-
-        // Attach event listeners for inspect buttons
-        document.querySelectorAll('.inspect').forEach(button => {
-            button.addEventListener('click', function() {
-                const cardId = this.dataset.cardId;
-                const cardSet = this.dataset.cardSet;
-                showCardDetails(cardId, cardSet);
-            });
-        });
-
-        // Attach event listeners for remove buttons
-        document.querySelectorAll('.remove').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.parentElement.parentElement;
-                row.remove();
-            });
-        });
-    }
-
-    // Add form submission logic
-    addForm.addEventListener('submit', function(event) {
-        event.preventDefault();
+    // Populate the datalist with card names
+    cardSetSelect.addEventListener('change', function() {
+        cardNamesDatalist.innerHTML = ''; // Clear previous options
         const selectedSet = cardSetSelect.value;
-        const selectedCardName = cardNameInput.value;
+        if (selectedSet && cardData[selectedSet]) {
+            //const getCards = async() => {
+                var listOfCards = /*await*/ getCardsInSet(selectedSet, cardNamesDatalist).then(() => {
+                    console.log("returned listOfCards");
+                    listOfCards.data.forEach((card) => {
+                        card.data();
+                        const option = document.createElement('option');
+                        option.value = card.name;
+                        cardNamesDataList.appendChild(option);
+                    });
+                });
+            //}
 
-        const selectedCard = cardData[selectedSet].find(card => card.name === selectedCardName);
-        if (selectedCard) {
-            const newCard = {
-                name: selectedCard.name,
-                set: selectedSet,
-                marketPrice: selectedCard.Normal !== undefined ? selectedCard.Normal : 'N/A',
-                foilPrice: selectedCard.Foil !== undefined ? selectedCard.Foil : 'N/A',
-                weekRange: 'N/A' // Replace this with the actual 52-week range if available
-            };
-            addWatchlistItem(newCard);
+            /*cardData[selectedSet].forEach(card => {
+                const option = document.createElement('option');
+                option.value = card.name;
+                cardNamesDatalist.appendChild(option);
+            });*/
         }
-        addModal.style.display = 'none';
     });
 
-    
+    searchButton.addEventListener('click', function() {
+        const query = searchInput.value.trim();
+        if (query) {
+            searchItems(query);
+        }
+    });
 
-    // Event listeners for opening and closing modals
     addButton.addEventListener('click', function() {
         addModal.style.display = 'block';
     });
@@ -1060,34 +923,55 @@ document.addEventListener('DOMContentLoaded', function() {
         addModal.style.display = 'none';
     });
 
-    // Function to show card details in the inspect modal
-    function showCardDetails(cardId, cardSet) {
-        const card = cardData[cardSet].find(c => c.id == cardId);
+    closeInspectModal.addEventListener('click', function() {
+        inspectModal.style.display = 'none';
+    });
+
+    addForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const cardSet = cardSetSelect.value;
+        const cardName = cardNameInput.value.trim();
+        const card = cardData[cardSet].find(card => card.name === cardName);
+
         if (card) {
-            cardDetailsDiv.innerHTML = `
-                <p><strong>Name:</strong> ${card.name}</p>
-                <p><strong>Set:</strong> ${cardSet}</p>
-                <p><strong>Normal Price:</strong> ${card.Normal ? card.Normal.toFixed(2) : 'N/A'} USD</p>
-                <p><strong>Foil Price:</strong> ${card.Foil ? card.Foil.toFixed(2) : 'N/A'} USD</p>
-            `;
-            inspectModal.style.display = 'block';
+            addToWatchlist(card, cardSet);
+            addModal.style.display = 'none';
         }
+    });
+
+    function searchItems(query) {
+        // Implement the search functionality here
+        console.log('Searching for:', query);
     }
 
-    // Function to save the watchlist to local storage
-    function saveWatchlist() {
-        const watchlistItems = [];
-        watchlistTable.querySelectorAll('tr').forEach(row => {
-            const cells = row.querySelectorAll('td');
-            watchlistItems.push({
-                id: cells[0].dataset.id,
-                name: cells[0].innerText,
-                category: cells[1].innerText,
-                price: cells[2].innerText,
-                quantity: cells[3].innerText
-            });
-        });
-        localStorage.setItem('watchlist', JSON.stringify(watchlistItems));
+    function addToWatchlist(card, cardSet) {
+        // Implement the add to watchlist functionality here
+        console.log('Adding to watchlist:', cardSet, card.name);
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${card.name}</td>
+            <td>${cardSet}</td>
+            <td>${card.Normal}</td>
+            <td>${card.Foil}</td>
+            <td>N/A</td>
+            <td>
+                <button class="inspect" onclick="inspectCard('${card.name}', '${cardSet}')">Inspect</button>
+                <button class="remove" onclick="removeFromWatchlist(this)">Remove</button>
+            </td>
+        `;
+        watchlistTable.appendChild(newRow);
+        saveCardToUserWatchlist(cardSet, card.id);
     }
+
+    window.inspectCard = function(cardName, cardSet) {
+        // Implement the inspect card functionality here
+        console.log('Inspecting:', cardName, cardSet);
+        inspectModal.style.display = 'block';
+    };
+
+    window.removeFromWatchlist = function(button) {
+        // Implement the remove from watchlist functionality here
+        const row = button.closest('tr');
+        row.remove();
+    };
 });
-
