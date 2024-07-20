@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - TCGenius</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="profile.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo logo-left" id="logo"><img src="Logo.webp" alt="Logo"></div>
+            <div class="dropdown">
+                <button class="dropbtn">&#9776;</button>
+                <div class="dropdown-content">
+                    <a href="main.html" id="dashboard">Dashboard</a>
+                    <a href="profile.html">Profile</a>
+                    <a href="login.html">Sign Out</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main id="main-content">
+        <div class="container">
+            <section class="profile-card">
+                <img src="" alt="User Picture" id="user-picture">
+                <h2 id="user-name"></h2>
+                <p>Email: <span id="user-email"></span></p>
+                <p>Member since: <span id="member-since"></span></p>
+                <p>Favorite TCG: <span id="favorite-tcg"></span></p>
+                <button class="button" onclick="editProfile()">Edit Profile</button>
+            </section>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 TCGenius. All rights reserved.</p>
+    </footer>
+    <script>
+        function editProfile() {
+            alert("Edit Profile feature coming soon!");
+        }
+    </script>
+</body>
+</html>
+
+
