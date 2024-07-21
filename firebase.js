@@ -1,6 +1,6 @@
 // Firebase modules for app initialization and authentication
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, setDoc, doc, addDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
 // Firebase configuration (API keys and identifiers)
@@ -43,14 +43,14 @@ export async function getTCGSets(cardGame, setList) {
         //setList.appendChild(option);
 
     });
-    console.log(setNames);
+    //console.log(setNames);
     return setNames;
 }
 
 //get all cards in a set
 export async function getCardsInSet(setName, dataList, cardGame){
     var cards = [];
-    console.log(setName);
+    //console.log(setName);
     const q = query(collection(db, "TradingCardGames", cardGame, "Sets", setName, "cards"));
     const listOfCards = await getDocs(q);
     listOfCards.forEach((doc) => {
@@ -71,7 +71,6 @@ export async function getCardsInSet(setName, dataList, cardGame){
     //return await getDocs(collection(db, "TradingCardGames", "Star Wars Unlimited", "Sets", setName, "cards"))
 }
 
-//Unneeded?
 export async function saveUserData(userId, email) {
     email = email.toLowerCase();
     const usersRef = collection(db, "Users");
@@ -84,7 +83,7 @@ export async function saveUserData(userId, email) {
 }
 
 //Save a selected card to the watchlist in the database
-export async function saveCardToUserWatchlist(setName, cardId) {
+export async function saveCardToUserWatchlist(setName, cardId, cardGame) {
     const docRef = doc(db, "TradingCardGames", "Star Wars Unlimited", "Sets", setName, "cards", cardId.toString());
     console.log(setName)
     console.log(cardId)
@@ -97,14 +96,38 @@ export async function saveCardToUserWatchlist(setName, cardId) {
         console.log("Nadda");
     }
 
-    console.log(auth.currentUser.email)
-    const userRef = collection(db, "Users", auth.currentUser.email, "Watchlist");
+    //console.log(auth.currentUser.email)
+    const userRef = collection(db, "Users", auth.currentUser.email, cardGame);
     setDoc(doc(userRef, cardId.toString()),
         docSnap.data()
     );
 }
 
+export async function retrieveWatchlist(cardGame, email) {
+    var watchlist = []
+    //onAuthStateChanged(auth, async (user) => {
+            //const auth = getAuth(app);
+            //console.log(auth.currentUser.email);
+            const q = query(collection(db, "Users", email, cardGame));
+            if (q.empty) {
+                console.log("empty");
+                return watchlist;
+            } else {
+                const listOfCards = await getDocs(q);
+                listOfCards.forEach((doc) => {
+                    const card = doc.data();
+                    console.log(card);
+                    watchlist.push(card);
+                });
+                console.log(watchlist);
+                console.log("Not empty" + watchlist);
+                return watchlist;
+            }
 
+            //return watchlist;
+    //});
+    //return watchlist;
+}
 
 
 

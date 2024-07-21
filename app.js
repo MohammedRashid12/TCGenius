@@ -1,7 +1,7 @@
 // Imports Firebase modules for app initialization and authentication 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
-import { getCardsInSet, saveCardToUserWatchlist, getTCGSets } from "./firebase.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+import { getCardsInSet, saveCardToUserWatchlist, getTCGSets, retrieveWatchlist } from "./firebase.js";
 
 // Firebase configuration 
 const firebaseConfig = {
@@ -43,15 +43,55 @@ document.addEventListener('DOMContentLoaded', function() {
         'Set 1': [
             { id: 1001, name: "Card A",},
             { id: 1002, name: "Card B",},
-            { id: 1003, name: "Card C",},
+            { id: 1003, name: "Card C",}
             // Add more Lorcana cards here
-        ],
+        ]
         // Add more Lorcana sets here
     };
 
     var cardData = {};
+    var watchlists = {};
 
     let currentGame = 'Star Wars Unlimited';
+
+    function displayExistingWatchlist(email) {
+        console.log(email);
+        //email = userPerson.email;
+        retrieveWatchlist(currentGame, email)
+        .then((result) => {
+            watchlists[currentGame] = result;
+            console.log(watchlists);
+            watchlists[currentGame].forEach(card => {
+                console.log(card)
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${card.name}</td>
+                    <td>${card.set}</td>
+                    <td>${card.Normal}</td>
+                    <td>${card.Foil}</td>
+                    <td>N/A</td>
+                    <td>
+                        <button class="inspect" onclick="inspectCard('${card.name}', '${card.set}')">Inspect</button>
+                        <button class="remove" onclick="removeFromWatchlist(this)">Remove</button>
+                    </td>
+                `;
+                watchlistTable.appendChild(newRow);
+            });
+        });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if(user) {
+            console.log("Attempting to load with auth state");
+            displayExistingWatchlist(user.email);
+        }
+    });
+
+    /*window.addEventListener('DOMContentLoaded', function() {
+        const auth = getAuth(app);
+        console.log("Attempting to load watchlist");
+        displayExistingWatchlist();
+    });*/
     
     createNewWatchlistButton.addEventListener('click', function() {
         createWatchlistModal.style.display = 'block';
@@ -93,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         getTCGSets(currentGame, cardSetSelect)
         .then((result) => {
-            console.log(result);
+            //console.log(result);
             for (const setName in result) {
                 const option = document.createElement('option');
                 option.value = result[setName];
@@ -114,13 +154,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const cardId = selectedCard.id;
         const imageUrl = selectedCard.imageUrl;
 
-        saveCardToUserWatchlist(setName, cardId);
+        //saveCardToUserWatchlist(setName, cardId);
     });
 
-    async function fetchImageUrl(setName, cardId) {
+/*    async function fetchImageUrl(setName, cardId) {
         // Assuming getImageUrl is a function in firebase.js that fetches the image URL for a card
         return await getImageUrl(setName, cardId);
-    }
+    }*/
 
     function displayCardDetails(card) {
         cardImage.src = card.imageUrl;
@@ -131,7 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('inspect')) {
             const cardId = e.target.dataset.cardId;
             const setName = e.target.dataset.setName;
-            const imageUrl = await fetchImageUrl(setName, cardId);
+            const card = watchlists[setName].find(card => card.id === cardId);
+            //const imageUrl = await fetchImageUrl(setName, cardId);
+            const imageUrl = card.imageUrl;
             displayCardDetails({ imageUrl });
         }
     });
@@ -206,7 +248,12 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
         `;
         watchlistTable.appendChild(newRow);
-        saveCardToUserWatchlist(cardSet, card.id);
+        saveCardToUserWatchlist(cardSet, card.id, currentGame);
+        if (!(currentGame in watchlists)){
+            watchlists[currentGame] = [];
+        }
+        watchlists[currentGame].push(card);
+        console.log(watchlists);
     }
 
     window.inspectCard = function(cardName, cardSet) {
@@ -222,4 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = button.closest('tr');
         row.remove();
     };
+
+
 });
